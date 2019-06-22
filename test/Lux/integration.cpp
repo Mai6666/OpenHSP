@@ -21,8 +21,8 @@ int main(){
 	if(stat != 0) std::cout << "Open error" << std::endl;
 	
 	std::cout << I2C_WriteByte(0, 0x0180, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x0F+0x00, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x0D+0x04, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x000F, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x040D, 2) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x0380, 2) << std::endl;
 
 	for(int i=0; i<1; i++){
