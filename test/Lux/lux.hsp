@@ -1,0 +1,15 @@
+#include "hsp3dish.as"
+#include "rpz-gpio.as"
+
+
+i2cinit
+
+*main
+	again = 2
+	atime = 0xB6+0xA0
+	get_lux
+	gpmes ""+t_val+" "+t_ch0+" "+t_ch1+" "+rpz_lux
+	update 1
+
+	goto *main
+i2cclose

@@ -1,0 +1,15 @@
+#include "hsp3dish.as"
+#include "rpz-gpio.as"
+
+
+i2cinit
+
+*main
+	again = 2
+	atime = 0xB6+0xA0
+	val = integration(again, atime)
+	;gpmes " "+val
+	update 1
+
+	goto *main
+i2cclose
