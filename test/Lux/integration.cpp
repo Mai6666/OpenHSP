@@ -20,13 +20,13 @@ int main(){
 	int stat = I2C_Open(0,0x39);
 	if(stat != 0) std::cout << "Open error" << std::endl;
 	
-	std::cout << I2C_WriteByte(0, 0x0180, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x000F, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x040D, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x0380, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x01A0, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x00AF, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x04AD, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x03A0, 2) << std::endl;
 
 	for(int i=0; i<1; i++){
-		I2C_WriteByte(0, 0x14+0x80, 4);
+		I2C_WriteByte(0, 0x14+0xA0, 4);
 		lux = I2C_ReadWord(0);
 		//std::cout << std::bitset<32>(lux);//
 		std::cout << std::hex << lux << std::endl;
