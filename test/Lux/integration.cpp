@@ -23,6 +23,7 @@ int main(){
 	std::cout << I2C_WriteByte(0, 0x01A0, 4) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x00AD, 4) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x01AF, 4) << std::endl;
+	std::cout << I2C_WriteByte(0, 0xB6A1, 4) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x03A0, 4) << std::endl;
 
 	for(int i=0; i<1; i++){
