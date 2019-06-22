@@ -27,7 +27,7 @@ int main(){
 	std::cout << I2C_WriteByte(0, 0x03A0, 4) << std::endl;
 
 	for(int i=0; i<1; i++){
-		I2C_WriteByte(0, 0x14|0xA0, 4);
+		I2C_WriteByte(0, 0x14+0xA0, 4);
 		lux = I2C_ReadWord(0);
 		//std::cout << std::bitset<32>(lux);//
 		std::cout << std::hex << lux << std::endl;
