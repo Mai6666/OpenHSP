@@ -20,10 +20,10 @@ int main(){
 	int stat = I2C_Open(0,0x39);
 	if(stat != 0) std::cout << "Open error" << std::endl;
 	
-	std::cout << I2C_WriteByte(0, 0x01A0, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x00AF, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x04AD, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x03A0, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x01A0, 4) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x00AD, 4) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x01AF, 4) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x03A0, 4) << std::endl;
 
 	for(int i=0; i<1; i++){
 		I2C_WriteByte(0, 0x14+0xA0, 4);
