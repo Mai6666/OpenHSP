@@ -22,7 +22,7 @@ int main(){
 	
 	std::cout << I2C_WriteByte(0, 0x01A0, 2) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x00AD, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x01AF, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x00AF, 2) << std::endl;
 	std::cout << I2C_WriteByte(0, 0xB6A1, 2) << std::endl;
 	std::cout << I2C_WriteByte(0, 0x03A0, 2) << std::endl;
 
