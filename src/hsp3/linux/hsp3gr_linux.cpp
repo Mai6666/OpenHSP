@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -21,6 +22,7 @@
 #include "hsp3gr_linux.h"
 
 #ifndef MCP3008TEST
+#ifndef LUXTEST
 
 /*------------------------------------------------------------*/
 /*
@@ -39,6 +41,8 @@ static int dispflg;
 
 extern int resY0, resY1;
 
+#endif // LUXTEST
+
 /*----------------------------------------------------------*/
 //					Raspberry Pi I2C support
 /*----------------------------------------------------------*/
@@ -49,9 +53,9 @@ extern int resY0, resY1;
 #define HSPI2C_CHMAX 16
 #define HSPI2C_DEVNAME "/dev/i2c-1"
 
-static int i2cfd_ch[HSPI2C_CHMAX];
+int i2cfd_ch[HSPI2C_CHMAX];
 
-static void I2C_Init( void )
+void I2C_Init( void )
 {
 	int i;
 	for(i=0;i<HSPI2C_CHMAX;i++) {
@@ -59,7 +63,7 @@ static void I2C_Init( void )
 	}
 }
 
-static void I2C_Close( int ch )
+void I2C_Close( int ch )
 {
 	if ( ( ch<0 )||( ch>=HSPI2C_CHMAX ) ) return;
 	if ( i2cfd_ch[ch] == 0 ) return;
@@ -68,7 +72,7 @@ static void I2C_Close( int ch )
 	i2cfd_ch[ch] = 0;
 }
 
-static void I2C_Term( void )
+void I2C_Term( void )
 {
 	int i;
 	for(i=0;i<HSPI2C_CHMAX;i++) {
@@ -76,7 +80,7 @@ static void I2C_Term( void )
 	}
 }
 
-static int I2C_Open( int ch, int adr )
+int I2C_Open( int ch, int adr )
 {
 	int fd;
 	unsigned char i2cAddress;
@@ -97,7 +101,7 @@ static int I2C_Open( int ch, int adr )
 	return 0;
 }
 
-static int I2C_ReadByte( int ch )
+int I2C_ReadByte( int ch )
 {
 	int res;
 	unsigned char data[8];
@@ -112,23 +116,25 @@ static int I2C_ReadByte( int ch )
 	return res;
 }
 
-static int I2C_ReadWord( int ch )
+int I2C_ReadWord( int ch )
 {
-	int res;
+	int ch0, ch1, res;
 	unsigned char data[8];
 
 	if ( ( ch<0 )||( ch>=HSPI2C_CHMAX ) ) return -1;
 	if ( i2cfd_ch[ch] == 0 ) return -1;
 
-	res = read( i2cfd_ch[ch], data, 2 );
+	res = read( i2cfd_ch[ch], data, 4 );
 	if ( res < 0 ) return -1;
 
-	res = ((int)data[1]) << 8;
-	res += (int)data[0];
+	ch0 = ((int)data[1] << 8) | data[0];
+	ch1 = ((int)data[3] << 8) | data[2];
+
+	res = ch0 | (ch1 << 16);
 	return res;
 }
 
-static int I2C_WriteByte( int ch, int value, int length )
+int I2C_WriteByte( int ch, int value, int length )
 {
 	int res;
 	int len;
@@ -147,9 +153,132 @@ static int I2C_WriteByte( int ch, int value, int length )
 	return 0;
 }
 
+/*
+	AGAIN_0_16 0
+	AGAIN_1 1
+	AGAIN_8 2
+	AGAIN_16 3
+	AGAIN_120 4
+
+	ATIME_50, 0xED
+	ATIME_200 0xB6
+	ATIME_600 0x24
+*/
+void set(int _p1, int _p2){
+	printf("set :%d %d\n",_p1,_p2);
+	if(_p1 == 0){
+		I2C_WriteByte(0xD,0x4A0,1);
+		I2C_WriteByte(0xF,0x0A0,1);
+	}else if (_p1 == 1){
+		I2C_WriteByte(0xD,0x0A0,4);
+		I2C_WriteByte(0xF,0x0A0,4);
+	}else if (_p1 == 2){
+		I2C_WriteByte(0xD,0x0A0,2);
+		I2C_WriteByte(0xF,0x1A0,2);
+	}else if (_p1 == 3){
+		I2C_WriteByte(0xD,0x0A0,1);
+		I2C_WriteByte(0xF,0x2A0,1);
+	}else if (_p1 == 4){
+		I2C_WriteByte(0xD,0x0A0,1);
+		I2C_WriteByte(0xF,0x3A0,1);
+	}
+	
+	I2C_WriteByte(0x1,_p2,4);
+	
+}
+	
+int integration(int _p1, int _p2){
+	int stat, val;
+	stat = I2C_WriteByte(0,0x01A0,2);	// 電源OFF
+	if(stat) return 1;
+	set(_p1, _p2);
+	stat = I2C_WriteByte(0,0x03A0,2);	// 電源ON
+	if(stat) return 1;
+
+	I2C_WriteByte(0,0x14+0xA0,2);
+	val = I2C_ReadWord(0);
+	printf("integ val: %x\n",val);
+	return val;
+}
+
+
+int calc_lux(int _p1, int _p2, int _p3, int _p4){
+	double t=0.0, g=0.0, cpl;
+	double lux1, lux2;
+
+	if(_p1 == 0){
+		g = 0.16;
+	}else if (_p1 == 1){
+		g = 1;
+	}else if (_p1 == 2){
+		g = 8;
+	}else if (_p1 == 3){
+		g = 16;
+	}else if (_p1 == 4){
+		g = 120;
+	}
+
+	if(_p2 == 0xED){
+		t = 50;
+	}else if (_p2 == 0xB6){
+		t = 200;
+	}else if (_p2 == 0x24){
+		t = 600;
+	}
+	cpl = (t*g)/60;
+	lux1 = (_p3 - 1.87*_p4) / cpl;
+	lux2 = (0.63*_p3 - _p4) / cpl;
+
+	printf("%f %f %f %f\n",g,t,lux1,lux2);
+	return std::max(lux1, lux2);
+}
+int get_lux(void){
+	int again = 1, atime = 0xB6, val=0;
+	int ch0, ch1, lux;
+
+	val = integration(again, atime);
+	printf("%d %d\n",again,atime);
+
+	ch0=val&0xFFFF;
+	ch1=(val>>16)&0xFFFF;
+
+	printf("before: %x %x\n",ch0,ch1);
+
+	if (std::max(ch0, ch1) == 65535){
+		again = 0;
+		atime = 0xED;
+		val = integration(again, atime);
+	}else if(std::max(ch0, ch1) < 100){
+		again = 4;
+		atime = 0x24;
+		val = integration(again, atime);
+	}else if(std::max(ch0, ch1) < 300){
+		again = 4;
+		atime = 0xB6;
+		val = integration(again, atime);
+	}else if(std::max(ch0, ch1) < 3000){
+		again = 2;
+		atime = 0xB6;
+		val = integration(again, atime);
+	}
+
+
+	I2C_WriteByte(0,0x00A0,2);
+
+	ch0=val&0xFFFF;
+	ch1=(val>>16)&0xFFFF;
+
+
+	lux=calc_lux(again, atime, ch0, ch1);
+
+	printf("%x %x %d %x\n",ch0,ch1,again,atime);
+	return lux;
+}
 #endif
 
 #endif // MCP3008TEST
+
+#ifndef LUXTEST //LUXTEST
 /*----------------------------------------------------------*/
 //					Raspberry Pi SPI support
 /*----------------------------------------------------------*/
@@ -1041,3 +1170,4 @@ void hsp3typeinit_cl_extfunc( HSP3TYPEINFO *info )
 #endif
 }
 #endif // MCP3008TEST
+#endif //LUXTEST
