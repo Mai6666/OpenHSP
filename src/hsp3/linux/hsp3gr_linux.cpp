@@ -167,23 +167,23 @@ int I2C_WriteByte( int ch, int value, int length )
 void set(int _p1, int _p2){
 	printf("set :%d %d\n",_p1,_p2);
 	if(_p1 == 0){
-		I2C_WriteByte(0xD,0x4A0,1);
-		I2C_WriteByte(0xF,0x0A0,1);
+		I2C_WriteByte(0, 0x04AD, 2);
+		I2C_WriteByte(0, 0x00AF, 2);
 	}else if (_p1 == 1){
-		I2C_WriteByte(0xD,0x0A0,4);
-		I2C_WriteByte(0xF,0x0A0,4);
+		I2C_WriteByte(0, 0x00AD, 2);
+		I2C_WriteByte(0, 0x00AF, 2);
 	}else if (_p1 == 2){
-		I2C_WriteByte(0xD,0x0A0,2);
-		I2C_WriteByte(0xF,0x1A0,2);
+		I2C_WriteByte(0, 0x00AD, 2);
+		I2C_WriteByte(0, 0x01AF, 2);
 	}else if (_p1 == 3){
-		I2C_WriteByte(0xD,0x0A0,1);
-		I2C_WriteByte(0xF,0x2A0,1);
+		I2C_WriteByte(0, 0x00AD, 2);
+		I2C_WriteByte(0, 0x02AF, 2);
 	}else if (_p1 == 4){
-		I2C_WriteByte(0xD,0x0A0,1);
-		I2C_WriteByte(0xF,0x3A0,1);
+		I2C_WriteByte(0, 0x00AD, 2);
+		I2C_WriteByte(0, 0x03AF, 2);
 	}
 	
-	I2C_WriteByte(0x1,_p2,4);
+	I2C_WriteByte(0, _p2|0x00A1,4); // set atime
 	
 }
 	
@@ -195,7 +195,7 @@ int integration(int _p1, int _p2){
 	stat = I2C_WriteByte(0,0x03A0,2);	// 電源ON
 	if(stat) return 1;
 
-	I2C_WriteByte(0,0x14+0xA0,2);
+	I2C_WriteByte(0,0x14|0xA0,4);
 	val = I2C_ReadWord(0);
 	printf("integ val: %x\n",val);
 	return val;
@@ -263,7 +263,8 @@ int get_lux(void){
 	}
 
 
-	I2C_WriteByte(0,0x00A0,2);
+	I2C_WriteByte(0,0x01A0,2);
+
 
 	ch0=val&0xFFFF;
 	ch1=(val>>16)&0xFFFF;
