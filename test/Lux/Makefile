@@ -1,4 +1,4 @@
-TARGET = integration
+TARGET = lux
 CXX = g++
 SRCS = ../../src/hsp3/linux/hsp3gr_linux.cpp
 OBJS = $(SRCS:%.cpp=%.o)
