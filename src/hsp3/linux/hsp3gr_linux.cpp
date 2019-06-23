@@ -165,7 +165,7 @@ int I2C_WriteByte( int ch, int value, int length )
 	ATIME_600 0x24
 */
 void set(int _p1, int _p2){
-	printf("set :%d %d\n",_p1,_p2);
+	printf("set :%d %x\n",_p1,_p2);
 	if(_p1 == 0){
 		I2C_WriteByte(0, 0x04AD, 2);
 		I2C_WriteByte(0, 0x00AF, 2);
@@ -183,7 +183,7 @@ void set(int _p1, int _p2){
 		I2C_WriteByte(0, 0x03AF, 2);
 	}
 	
-	I2C_WriteByte(0, _p2|0x00A1,4); // set atime
+	I2C_WriteByte(0, _p2|0x00A1,2); // set atime
 	
 }
 	
@@ -195,7 +195,7 @@ int integration(int _p1, int _p2){
 	stat = I2C_WriteByte(0,0x03A0,2);	// 電源ON
 	if(stat) return 1;
 
-	I2C_WriteByte(0,0x14|0xA0,4);
+	stat = I2C_WriteByte(0,0x14|0xA0,4);
 	val = I2C_ReadWord(0);
 	printf("integ val: %x\n",val);
 	return val;
@@ -237,12 +237,9 @@ int get_lux(void){
 	int ch0, ch1, lux;
 
 	val = integration(again, atime);
-	printf("%d %d\n",again,atime);
 
 	ch0=val&0xFFFF;
 	ch1=(val>>16)&0xFFFF;
-
-	printf("before: %x %x\n",ch0,ch1);
 
 	if (std::max(ch0, ch1) == 65535){
 		again = 0;
@@ -260,15 +257,14 @@ int get_lux(void){
 		again = 2;
 		atime = 0xB6;
 		val = integration(again, atime);
+		printf("*%x\n",val);
 	}
-
 
 	I2C_WriteByte(0,0x01A0,2);
 
 
 	ch0=val&0xFFFF;
 	ch1=(val>>16)&0xFFFF;
-
 
 	lux=calc_lux(again, atime, ch0, ch1);
 

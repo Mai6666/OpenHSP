@@ -1,0 +1,11 @@
+#include "hsp3dish.as"
+#include "rpz-gpio.as"
+
+
+i2cinit
+
+*main
+	gpmes ""+rpz_lux
+	update 1
+
+	goto *main

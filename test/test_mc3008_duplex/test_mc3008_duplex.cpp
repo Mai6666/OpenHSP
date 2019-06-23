@@ -7,6 +7,7 @@ extern int SPI_ReadWord( int ch );
 extern int SPI_WriteByte( int ch, int value, int length );
 extern int MCP3008_FullDuplex(int spich, int adcch);
 
+
 #include <iostream>
 #include <unistd.h>
 using std::cout;
