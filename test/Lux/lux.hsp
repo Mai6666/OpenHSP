@@ -1,12 +1,15 @@
-#include "hsp3dish.as"
 #include "rpz-gpio.as"
 
 i2cinit
 
 *main
-	get_lux
-	gpmes ""+rpz_lux
-	update 1
-
+	redraw 0
+	font "",60
+	mes "明るさは"+rpz_lux
+	redraw 1
+	getlux
+	wait 10
 	goto *main
+
 i2cclose
+

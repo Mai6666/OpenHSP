@@ -20,16 +20,23 @@ int main(){
 	int stat = I2C_Open(0,0x39);
 	if(stat != 0) std::cout << "Open error" << std::endl;
 	
-	std::cout << I2C_WriteByte(0, 0x01A0, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x00AD, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x00AF, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0xB6A1, 2) << std::endl;
-	std::cout << I2C_WriteByte(0, 0x03A0, 2) << std::endl;
-
+	std::cout << I2C_WriteByte(0, 0x0180, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x008D, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x028F, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0xB681, 2) << std::endl;
+	std::cout << I2C_WriteByte(0, 0x0380, 2) << std::endl;
+	while(1){
+		I2C_WriteByte(0, 0x93, 1);
+		int status = I2C_ReadByte(0);
+		if((status&0x1 == 1) && (((status&0x10)>>4) == 1)){
+			I2C_WriteByte(0, 0x0180, 2);
+			break;
+		}
+		else usleep(1000);
+	}
+	I2C_WriteByte(0, 0x14|0xA0, 1); 
 	for(int i=0; i<1; i++){
-		std::cout << I2C_WriteByte(0, 0x14|0xA0, 4) << std::endl; 
 		lux = I2C_ReadWord(0);
-		//std::cout << std::bitset<32>(lux);//
 		std::cout << std::hex << lux << std::endl;
 		usleep(50000);
 	}

@@ -81,17 +81,12 @@
 	devcontrol "i2copen",0x39	; TSL2572を初期化
 	if stat : return 1
 	wait 40
-	devcontrol "i2cwrite",0x01A0,2
-	devcontrol "i2cwrite",0x00AD,2
-	devcontrol "i2cwrite",0x01AF,2
-	devcontrol "i2cwrite",0x03A0,2
 	return 0
 
-#deffunc get_lux
-	devcontrol "i2cwrite",0x14|0x00A0,2
-	devcontrol "i2creadw"
-	rpz_lux@=stat
-	return 0
+#deffunc getlux
+	devcontrol "getlux"
+	rpz_lux@=0+stat
+	return
 
 #global
 

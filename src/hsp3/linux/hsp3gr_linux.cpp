@@ -165,39 +165,45 @@ int I2C_WriteByte( int ch, int value, int length )
 	ATIME_600 0x24
 */
 void set(int _p1, int _p2){
-	printf("set :%d %x\n",_p1,_p2);
 	if(_p1 == 0){
-		I2C_WriteByte(0, 0x04AD, 2);
-		I2C_WriteByte(0, 0x00AF, 2);
+		I2C_WriteByte(0, 0x048D, 2);
+		I2C_WriteByte(0, 0x008F, 2);
 	}else if (_p1 == 1){
-		I2C_WriteByte(0, 0x00AD, 2);
-		I2C_WriteByte(0, 0x00AF, 2);
+		I2C_WriteByte(0, 0x008D, 2);
+		I2C_WriteByte(0, 0x008F, 2);
 	}else if (_p1 == 2){
-		I2C_WriteByte(0, 0x00AD, 2);
-		I2C_WriteByte(0, 0x01AF, 2);
+		I2C_WriteByte(0, 0x008D, 2);
+		I2C_WriteByte(0, 0x018F, 2);
 	}else if (_p1 == 3){
-		I2C_WriteByte(0, 0x00AD, 2);
-		I2C_WriteByte(0, 0x02AF, 2);
+		I2C_WriteByte(0, 0x008D, 2);
+		I2C_WriteByte(0, 0x028F, 2);
 	}else if (_p1 == 4){
-		I2C_WriteByte(0, 0x00AD, 2);
-		I2C_WriteByte(0, 0x03AF, 2);
+		I2C_WriteByte(0, 0x008D, 2);
+		I2C_WriteByte(0, 0x038F, 2);
 	}
 	
-	I2C_WriteByte(0, _p2|0x00A1,2); // set atime
+	I2C_WriteByte(0, _p2|0x0081,2); // set atime
 	
 }
 	
 int integration(int _p1, int _p2){
 	int stat, val;
-	stat = I2C_WriteByte(0,0x01A0,2);	// 電源OFF
+	stat = I2C_WriteByte(0,0x0180,2);	// 電源OFF
 	if(stat) return 1;
 	set(_p1, _p2);
-	stat = I2C_WriteByte(0,0x03A0,2);	// 電源ON
+	stat = I2C_WriteByte(0,0x0380,2);	// 電源ON
 	if(stat) return 1;
-
-	stat = I2C_WriteByte(0,0x14|0xA0,4);
+	while(1){
+		I2C_WriteByte(0, 0x93, 1);
+		int status = I2C_ReadByte(0);
+		if((status&0x1 == 1) && (((status&0x10)>>4) == 1)){
+			I2C_WriteByte(0, 0x0180, 2);
+			break;
+		}
+		else usleep(1000);
+	}
+	stat = I2C_WriteByte(0,0x14|0xA0,1);
 	val = I2C_ReadWord(0);
-	printf("integ val: %x\n",val);
 	return val;
 }
 
@@ -225,11 +231,10 @@ int calc_lux(int _p1, int _p2, int _p3, int _p4){
 	}else if (_p2 == 0x24){
 		t = 600;
 	}
-	cpl = (t*g)/60;
+	cpl = (t*g)/60.0;
 	lux1 = (_p3 - 1.87*_p4) / cpl;
 	lux2 = (0.63*_p3 - _p4) / cpl;
 
-	printf("%f %f %f %f\n",g,t,lux1,lux2);
 	return std::max(lux1, lux2);
 }
 int get_lux(void){
@@ -257,18 +262,15 @@ int get_lux(void){
 		again = 2;
 		atime = 0xB6;
 		val = integration(again, atime);
-		printf("*%x\n",val);
 	}
 
-	I2C_WriteByte(0,0x01A0,2);
-
+	I2C_WriteByte(0,0x0180,2);
 
 	ch0=val&0xFFFF;
 	ch1=(val>>16)&0xFFFF;
 
 	lux=calc_lux(again, atime, ch0, ch1);
 
-	printf("%x %x %d %x\n",ch0,ch1,again,atime);
 	return lux;
 }
 #endif
@@ -817,10 +819,13 @@ static int devcontrol( char *cmd, int p1, int p2, int p3 )
 	}
 	if (( strcmp( cmd, "spiclose" )==0 )||( strcmp( cmd, "SPICLOSE" )==0 )) {
 		SPI_Close( p1 );
-    return 0;
+		return 0;
 	}
 	if (( strcmp( cmd, "readmcpduplex" )==0 )||( strcmp( cmd, "READMCPDUPLEX" )==0 )) {
-    return MCP3008_FullDuplex(p2, p1);
+   		 return MCP3008_FullDuplex(p2, p1);
+	}
+	if (( strcmp( cmd, "getlux" )==0 )||( strcmp( cmd, "GETLUX" )==0 )) {
+    		return get_lux();
 	}
 	return -1;
 }

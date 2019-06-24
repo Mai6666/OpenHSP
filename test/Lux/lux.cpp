@@ -23,7 +23,6 @@ int main(){
 
 	for(int i=0; i<1; i++){
 		lux = get_lux();
-		//std::cout << std::bitset<32>(lux);//
 		std::cout << lux << std::endl;
 		usleep(50000);
 	}
