@@ -83,9 +83,42 @@
 	wait 40
 	return 0
 
+#defcfunc calc_lux var _again, var _atime, var _ch0, var _ch1
+	if(_again ==){ g = }
 #deffunc getlux
-	devcontrol "getlux"
-	rpz_lux@=0+stat
+	again = 1
+	atime = 1
+	
+	val = integration(again,atime)
+
+	ch0 = val&0xFFFF
+	ch1 = (val>>16)&0xFFFF
+
+	if(max(ch0,ch1) == 65535){
+		again = 0
+		atime = 0xED
+		val = integration(again, atime)
+	} else : if(max(ch0,ch1) < 100){
+		again = 4
+		atime = 0x24
+		val = integration(again, atime)
+	} else : if(max(ch0,ch1) < 300){
+		again = 4
+		atime = 0xB6
+		val = integration(again, atime)
+	} else : if(max(ch0,ch1) < 3000){
+		again = 2
+		atime = 0xB6
+		val = integration(again, atime)
+	}
+
+	devcontrol "i2cwrite" 0x0180,2
+	
+	ch0 = val&0xFFFF
+	ch1 = (val>>16)&0xFFFF
+	
+	lux = cal_lux(again, atime, ch0, ch1)
+	rpz_lux@=0+lux
 	return
 
 #global
