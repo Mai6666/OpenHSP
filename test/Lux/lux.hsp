@@ -1,19 +1,18 @@
 #include "rpz-gpio.as"
 
-i2cinit
+CH = 0
+init_lux CH
 
 *main
+	lux = get_lux(CH)
+
 	redraw 0
 	pos 60,60 
-	font "",60
-	mes "明るさは"+lux
+	font "",20
+	mes "明るさは"+lux+"です"
 	redraw 1
-	;getlux
-	again = 0
-	atime = 0xB6
-	lux = integration(again,atime)
+
 	wait 100
-	goto *main
+	goto *main	
 
-i2cclose
-
+i2cclose CH
