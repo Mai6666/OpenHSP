@@ -137,10 +137,10 @@
 
 #defcfunc calc_lux int _again, int _atime, int _ch0, int _ch1
 	if(_again == 0){ g = 0.16 }
-	else : if (_again == 1){ g = 1 }
-	else : if (_again == 2){ g = 8 }
-	else : if (_again == 3){ g = 16 }
-	else : if (_again == 4){ g = 120 }
+	else : if (_again == 1){ g = 1.0 }
+	else : if (_again == 2){ g = 8.0 }
+	else : if (_again == 3){ g = 16.0 }
+	else : if (_again == 4){ g = 120.0 }
 	
 	if(_atime == 0xED){ t = 50.0 }
 	else : if(_atime == 0xB6){ t = 200.0 }
