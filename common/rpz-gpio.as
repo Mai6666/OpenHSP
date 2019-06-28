@@ -86,7 +86,7 @@
 #defcfunc max var _p1, var _p2
 	if _p1 > _p2 : return _p1 : else : return _p2
 
-#deffunc set var _p1, var _p2, int _ch
+#deffunc set int _p1, int _p2, int _ch
 	if(_p1 == 0){
 		devcontrol "i2cwrite",0x048D, 2, _ch
 		devcontrol "i2cwrite",0x008F, 2, _ch
@@ -104,14 +104,13 @@
 		devcontrol "i2cwrite",0x038F, 2, _ch
 	}
 	
-	devcontrol "i2cwrite",_p2|0x0081, 2, _ch // set time
+	devcontrol "i2cwrite",(_p2<<8)|0x0081, 2, _ch // set time
 	return
 	
 
-#defcfunc integration var _again, var _atime, int _ch
+#deffunc integration int _again, int _atime, int _ch, array data
 	devcontrol "i2cwrite",0x0180,2, _ch
 	if stat : return 1
-	
 	set _again, _atime, _ch
 	devcontrol "i2cwrite",0x0380,2, _ch
 	if stat : return 1
@@ -128,19 +127,19 @@
 	loop
 	devcontrol "i2cwrite",0x14|0xA0,1, _ch
 	devcontrol "i2creadw", _ch	
-	val = 0+stat
+	data(0) = stat
 	devcontrol "i2cwrite",0x16|0x80,1, _ch
 	devcontrol "i2creadw", _ch
-	val |= (stat<<16)
+	data(1) = stat
 
-	return val
+	return 
 
 #defcfunc calc_lux int _again, int _atime, int _ch0, int _ch1
 	if(_again == 0){ g = 0.16 }
-	else : if (_again == 1){ g = 1 }
-	else : if (_again == 2){ g = 8 }
-	else : if (_again == 3){ g = 16 }
-	else : if (_again == 4){ g = 120 }
+	else : if (_again == 1){ g = 1.0 }
+	else : if (_again == 2){ g = 8.0 }
+	else : if (_again == 3){ g = 16.0 }
+	else : if (_again == 4){ g = 120.0 }
 	
 	if(_atime == 0xED){ t = 50.0 }
 	else : if(_atime == 0xB6){ t = 200.0 }
@@ -157,33 +156,33 @@
 	again = 1
 	atime = 0xB6
 	
-	val = integration(again,atime,ch)
+	integration(again,atime,ch, data)
 
-	ch0 = val&0xFFFF
-	ch1 = (val>>16)&0xFFFF
+	ch0 = data(0)
+	ch1 = data(1)
 
 	if(max(ch0,ch1) == 65535){
 		again = 0
 		atime = 0xED
-		val = integration(again, atime,ch)
+		integration(again,atime,ch, data)
 	} else : if(max(ch0,ch1) < 100){
 		again = 4
 		atime = 0x24
-		val = integration(again, atime,ch)
+		integration(again,atime,ch, data)
 	} else : if(max(ch0,ch1) < 300){
 		again = 4
 		atime = 0xB6
-		val = integration(again, atime,ch)
+		integration(again,atime,ch, data)
 	} else : if(max(ch0,ch1) < 3000){
 		again = 2
 		atime = 0xB6
-		val = integration(again, atime,ch)
+		integration(again,atime,ch, data)
 	}
 
 	devcontrol "i2cwrite",0x0180,2,ch
 	
-	ch0 = val&0xFFFF
-	ch1 = (val>>16)&0xFFFF
+	ch0 = data(0)
+	ch1 = data(1)
 
 	lux = calc_lux(again, atime, ch0, ch1)
 
