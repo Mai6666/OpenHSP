@@ -156,7 +156,7 @@
 	again = 1
 	atime = 0xB6
 	
-	integration(again,atime,ch, data)
+	integration again,atime,ch, data
 
 	ch0 = data(0)
 	ch1 = data(1)
@@ -164,19 +164,19 @@
 	if(max(ch0,ch1) == 65535){
 		again = 0
 		atime = 0xED
-		integration(again,atime,ch, data)
+		integration again,atime,ch, data
 	} else : if(max(ch0,ch1) < 100){
 		again = 4
 		atime = 0x24
-		integration(again,atime,ch, data)
+		integration again,atime,ch, data
 	} else : if(max(ch0,ch1) < 300){
 		again = 4
 		atime = 0xB6
-		integration(again,atime,ch, data)
+		integration again,atime,ch, data
 	} else : if(max(ch0,ch1) < 3000){
 		again = 2
 		atime = 0xB6
-		integration(again,atime,ch, data)
+		integration again,atime,ch, data
 	}
 
 	devcontrol "i2cwrite",0x0180,2,ch
