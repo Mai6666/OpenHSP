@@ -4,12 +4,14 @@ CH = 0
 init_lux CH
 
 *main
-	lux = get_lux(CH)
+
 
 	redraw 0
 	pos 60,60 
 	font "",20
+	lux = cget_lux(CH)
 	mes "明るさは"+lux+"です"
+
 	redraw 1
 
 	wait 100

@@ -81,10 +81,11 @@
 	devcontrol "i2copen",0x39,_ch	; TSL2572を初期化
 	if stat : return 1
 	wait 40
-	return 0
+	return
 	
 #defcfunc max var _p1, var _p2
 	if _p1 > _p2 : return _p1 : else : return _p2
+	return 0
 
 #deffunc set int _p1, int _p2, int _ch
 	if(_p1 == 0){
@@ -149,10 +150,9 @@
 
 	lux1 = (double(_ch0) - 1.87*double(_ch1)) / cpl
 	lux2 = (0.63*double(_ch0) - double(_ch1)) / cpl
-
 	return max(lux1, lux2)
 	
-#defcfunc get_lux int ch
+#defcfunc cget_lux int ch
 	again = 1
 	atime = 0xB6
 	
@@ -187,6 +187,17 @@
 	lux = calc_lux(again, atime, ch0, ch1)
 
 	return lux
+
+#defcfunc get_lux int ch
+	again = 2
+	atime = 0xB6
+
+	integration again,atime,ch, data
+
+	ch0 = data(0)
+	ch1 = data(1)
+
+	return ch0
 
 #global
 
